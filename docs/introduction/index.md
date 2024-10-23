@@ -26,26 +26,24 @@ npm install --global rollup
 
 这些命令假定你的应用程序入口点命名为 `main.js`，并且希望将所有导入编译到一个名为 `bundle.js` 的单个文件中。
 
-对于浏览器：
+::: code-group
 
-```shell
+```shell [浏览器]
 # 编译为包含自执行函数（'iife'）的 <script>。
-rollup main.js --file bundle.js --format iife
+$ rollup main.js --file bundle.js --format iife
 ```
 
-对于 Node.js:
-
-```shell
+```shell [Node.js]
 # 编译为一个 CommonJS 模块 ('cjs')
-rollup main.js --file bundle.js --format cjs
+$ rollup main.js --file bundle.js --format cjs
 ```
 
-对于浏览器和 Node.js：
-
-```shell
+```shell [浏览器和 Node.js]
 # UMD 格式需要一个包名
-rollup main.js --file bundle.js --format umd --name "myBundle"
+$ rollup main.js --file bundle.js --format umd --name "myBundle"
 ```
+
+:::
 
 ## 背景 {#the-why}
 
@@ -87,4 +85,4 @@ Rollup 可以通过插件 [导入现有的 CommonJS 模块](https://github.com/r
 
 ### 发布 ES 模块 {#publishing-es-modules}
 
-为了确保你的 ES 模块可以立即被处理 CommonJS 的工具，例如 Node.js 和 webpack 使用，你可以使用 Rollup 编译成 UMD 或 CommonJS 格式，然后在 `package.json` 文件中使用 `main` 属性指向编译后的版本。如果你的 `package.json` 文件还有一个 `module` 字段，那么像 Rollup 和 [webpack 2+](https://webpack.js.org/) 这样的可感知 ES 模块的工具将直接 [导入 ES 模块版本](https://github.com/rollup/rollup/wiki/pkg.module)。
+为了确保你的 ES 模块可以立即被处理 CommonJS 的工具使用，例如 Node.js 和 webpack，你可以使用 Rollup 编译成 UMD 或 CommonJS 格式，然后在 `package.json` 文件中使用 `main` 属性指向编译后的版本。如果你的 `package.json` 文件还有一个 `module` 字段，那么像 Rollup 和 [webpack 2+](https://webpack.js.org/) 这样的可感知 ES 模块的工具将直接 [导入 ES 模块版本](https://github.com/rollup/rollup/wiki/pkg.module)。

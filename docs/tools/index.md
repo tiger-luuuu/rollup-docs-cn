@@ -54,10 +54,13 @@ npm install --save-dev @rollup/plugin-node-resolve
 
 …然后将它添加到我们的配置文件中：
 
-```js
+```js twoslash
 // rollup.config.js
 import resolve from '@rollup/plugin-node-resolve';
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptions} */
+// ---cut-end---
 export default {
 	input: 'src/main.js',
 	output: {
@@ -91,10 +94,13 @@ import _ from 'lodash';
 
 以下是配置文件：
 
-```js
+```js twoslash
 // rollup.config.js
 import resolve from '@rollup/plugin-node-resolve';
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptions} */
+// ---cut-end---
 export default {
 	input: 'src/main.js',
 	output: {
@@ -116,7 +122,10 @@ export default {
 
 `external` 键接受模块名称的数组或一个函数，该函数接受模块名称并返回 true，如果应将其视为外部导入。例如：
 
-```js
+```js twoslash
+// ---cut-start---
+/** @type {import('rollup').RollupOptions} */
+// ---cut-end---
 export default {
 	// ...
 	external: id => /lodash/.test(id)
@@ -143,11 +152,14 @@ npm i -D @rollup/plugin-babel @rollup/plugin-node-resolve
 
 Add it to `rollup.config.js`:
 
-```js
+```js twoslash
 // rollup.config.js
 import resolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptions} */
+// ---cut-end---
 export default {
 	input: 'src/main.js',
 	output: {
@@ -205,7 +217,7 @@ Rollup 返回的 Promise 被 gulp 所理解，因此集成相对容易。
 
 语法与配置文件非常相似，但属性被分成两个不同的操作，对应于 [JavaScript API](../javascript-api/index.md)：
 
-```js
+```js twoslash
 const gulp = require('gulp');
 const rollup = require('rollup');
 const rollupTypescript = require('@rollup/plugin-typescript');
@@ -229,7 +241,7 @@ gulp.task('build', () => {
 
 你也可能会用到 `async/await` 语法：
 
-```js
+```js twoslash
 const gulp = require('gulp');
 const rollup = require('rollup');
 const rollupTypescript = require('@rollup/plugin-typescript');
@@ -254,19 +266,17 @@ gulp.task('build', async function () {
 如果你想要在 Deno 中使用 Rollup，你可以通过 [esm.sh](https://esm.sh/) 这样做：
 
 ```js
-import {rollup} from "https://esm.sh/rollup@2.61.1";
+import { rollup } from "https://esm.sh/@rollup/browser";
 
 const bundle = await rollup({ //...
 ```
 
-或者你可以从 npm 安装 rollup 并使用 [node 兼容层](https://deno.land/std@0.110.0/node)：
+但是对于复杂的编译任务来说，它并不适用。或者你可以从 npm 安装 rollup：
 
 ```js
-import {createRequire} from "https://deno.land/std@0.110.0/node/module.ts";
-const require = createRequire(import.meta.url);
-const {rollup} = require("rollup");
+import { rollup } from "npm:rollup";
 
 const bundle = await rollup({ //...
 ```
 
-请确保使用 `--unstable` 标志运行 deno。如果你计划使用 `bundle.write()`，请不要忘记 `--allow-read` 和 `--allow-write`。
+请注意：在运行 Rollup 的时候，Deno 会请求一些权限。

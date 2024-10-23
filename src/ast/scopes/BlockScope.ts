@@ -2,23 +2,30 @@ import type { AstContext } from '../../Module';
 import { logRedeclarationError } from '../../utils/logs';
 import type Identifier from '../nodes/Identifier';
 import type { ExpressionEntity } from '../nodes/shared/Expression';
-import { VariableKind } from '../nodes/shared/VariableKinds';
+import type { VariableKind } from '../nodes/shared/VariableKinds';
 import type LocalVariable from '../variables/LocalVariable';
 import ChildScope from './ChildScope';
 
 export default class BlockScope extends ChildScope {
+	constructor(parent: ChildScope) {
+		super(parent, parent.context);
+	}
+
 	addDeclaration(
 		identifier: Identifier,
 		context: AstContext,
 		init: ExpressionEntity,
 		kind: VariableKind
 	): LocalVariable {
-		if (kind === VariableKind.var) {
+		if (kind === 'var') {
 			const name = identifier.name;
 			const existingVariable =
 				this.hoistedVariables?.get(name) || (this.variables.get(name) as LocalVariable | undefined);
 			if (existingVariable) {
-				if (existingVariable.kind === VariableKind.var) {
+				if (
+					existingVariable.kind === 'var' ||
+					(kind === 'var' && existingVariable.kind === 'parameter')
+				) {
 					existingVariable.addDeclaration(identifier, init);
 					return existingVariable;
 				}

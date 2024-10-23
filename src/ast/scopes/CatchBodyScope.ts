@@ -3,18 +3,15 @@ import { logRedeclarationError } from '../../utils/logs';
 import type Identifier from '../nodes/Identifier';
 import * as NodeType from '../nodes/NodeType';
 import type { ExpressionEntity } from '../nodes/shared/Expression';
-import { VariableKind } from '../nodes/shared/VariableKinds';
+import type { VariableKind } from '../nodes/shared/VariableKinds';
 import { UNDEFINED_EXPRESSION } from '../values';
 import type LocalVariable from '../variables/LocalVariable';
 import ChildScope from './ChildScope';
 import type ParameterScope from './ParameterScope';
 
 export default class CatchBodyScope extends ChildScope {
-	constructor(
-		readonly parent: ParameterScope,
-		readonly context: AstContext
-	) {
-		super(parent, context);
+	constructor(readonly parent: ParameterScope) {
+		super(parent, parent.context);
 	}
 
 	addDeclaration(
@@ -23,14 +20,14 @@ export default class CatchBodyScope extends ChildScope {
 		init: ExpressionEntity,
 		kind: VariableKind
 	): LocalVariable {
-		if (kind === VariableKind.var) {
+		if (kind === 'var') {
 			const name = identifier.name;
 			const existingVariable =
 				this.hoistedVariables?.get(name) || (this.variables.get(name) as LocalVariable | undefined);
 			if (existingVariable) {
 				const existingKind = existingVariable.kind;
 				if (
-					existingKind === VariableKind.parameter &&
+					existingKind === 'parameter' &&
 					// If this is a destructured parameter, it is forbidden to redeclare
 					existingVariable.declarations[0].parent.type === NodeType.CatchClause
 				) {
@@ -55,7 +52,7 @@ export default class CatchBodyScope extends ChildScope {
 					this.addHoistedVariable(name, declaredVariable);
 					return declaredVariable;
 				}
-				if (existingKind === VariableKind.var) {
+				if (existingKind === 'var') {
 					existingVariable.addDeclaration(identifier, init);
 					return existingVariable;
 				}

@@ -32,7 +32,7 @@ export default class ForOfStatement extends StatementBase {
 	}
 
 	createScope(parentScope: ChildScope): void {
-		this.scope = new BlockScope(parentScope, this.scope.context);
+		this.scope = new BlockScope(parentScope);
 	}
 
 	hasEffects(): boolean {
@@ -51,6 +51,7 @@ export default class ForOfStatement extends StatementBase {
 	}
 
 	initialise() {
+		super.initialise();
 		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
 	}
 

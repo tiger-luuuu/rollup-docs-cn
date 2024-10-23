@@ -1,6 +1,7 @@
 import { type HasEffectsContext, type InclusionContext } from '../../ExecutionContext';
 import type { NodeInteraction } from '../../NodeInteractions';
 import { INTERACTION_CALLED } from '../../NodeInteractions';
+import type ChildScope from '../../scopes/ChildScope';
 import FunctionScope from '../../scopes/FunctionScope';
 import type { ObjectPath, PathTracker } from '../../utils/PathTracker';
 import type BlockStatement from '../BlockStatement';
@@ -12,7 +13,6 @@ import { type IncludeChildren } from './Node';
 import { ObjectEntity } from './ObjectEntity';
 import { OBJECT_PROTOTYPE } from './ObjectPrototype';
 import type { PatternNode } from './Pattern';
-import { VariableKind } from './VariableKinds';
 
 export default class FunctionNode extends FunctionBase {
 	declare body: BlockStatement;
@@ -23,8 +23,8 @@ export default class FunctionNode extends FunctionBase {
 	protected objectEntity: ObjectEntity | null = null;
 	private declare constructedEntity: ObjectEntity;
 
-	createScope(parentScope: FunctionScope): void {
-		this.scope = new FunctionScope(parentScope, this.scope.context);
+	createScope(parentScope: ChildScope): void {
+		this.scope = new FunctionScope(parentScope);
 		this.constructedEntity = new ObjectEntity(Object.create(null), OBJECT_PROTOTYPE);
 		// This makes sure that all deoptimizations of "this" are applied to the
 		// constructed entity.
@@ -103,7 +103,7 @@ export default class FunctionNode extends FunctionBase {
 
 	initialise(): void {
 		super.initialise();
-		this.id?.declare(VariableKind.function, this);
+		this.id?.declare('function', this);
 	}
 
 	protected addArgumentToBeDeoptimized(argument: ExpressionEntity) {

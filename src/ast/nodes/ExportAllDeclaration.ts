@@ -8,7 +8,7 @@ import { NodeBase } from './shared/Node';
 
 export default class ExportAllDeclaration extends NodeBase {
 	declare attributes: ImportAttribute[];
-	declare exported: Identifier | null;
+	declare exported: Identifier | Literal<string> | null;
 	declare needsBoundaries: true;
 	declare source: Literal<string>;
 	declare type: NodeType.tExportAllDeclaration;
@@ -18,6 +18,7 @@ export default class ExportAllDeclaration extends NodeBase {
 	}
 
 	initialise(): void {
+		super.initialise();
 		this.scope.context.addExport(this);
 	}
 

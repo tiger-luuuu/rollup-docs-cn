@@ -37,7 +37,7 @@ export default class BlockStatement extends StatementBase {
 	createScope(parentScope: ChildScope): void {
 		this.scope = (this.parent as Node).preventChildBlockScope
 			? (parentScope as ChildScope)
-			: new BlockScope(parentScope, this.scope.context);
+			: new BlockScope(parentScope);
 	}
 
 	hasEffects(context: HasEffectsContext): boolean {
@@ -62,6 +62,7 @@ export default class BlockStatement extends StatementBase {
 	}
 
 	initialise(): void {
+		super.initialise();
 		const firstBodyStatement = this.body[0];
 		this.deoptimizeBody =
 			firstBodyStatement instanceof ExpressionStatement &&

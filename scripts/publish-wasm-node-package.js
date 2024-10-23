@@ -1,5 +1,5 @@
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readJson, runWithEcho } from './helpers.js';
 import { MAIN_PACKAGE } from './release-constants.js';
@@ -11,8 +11,12 @@ const WASM_NODE_PACKAGE_INFO = {
 const COPIED_FILES_OR_DIRS = ['LICENSE.md', 'dist'];
 const PACKAGE_DIR = fileURLToPath(new URL('../wasm-node-package', import.meta.url));
 
-function getOutputPath(...arguments_) {
-	return resolve(PACKAGE_DIR, ...arguments_);
+/**
+ * @param {string[]} pathSegments
+ * @return {string}
+ */
+function getOutputPath(...pathSegments) {
+	return path.resolve(PACKAGE_DIR, ...pathSegments);
 }
 
 export default async function publishWasmNodePackage() {
@@ -47,5 +51,5 @@ export default async function publishWasmNodePackage() {
 		})
 	]);
 
-	await runWithEcho('npm', ['publish'], { cwd: resolve(PACKAGE_DIR) });
+	await runWithEcho('npm', ['publish'], { cwd: path.resolve(PACKAGE_DIR) });
 }

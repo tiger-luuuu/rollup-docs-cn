@@ -228,7 +228,7 @@ export class ModuleLoader {
 							customOptions,
 							typeof isEntry === 'boolean' ? isEntry : !importer,
 							attributes
-					  ),
+						),
 				importer,
 				source
 			),
@@ -294,8 +294,12 @@ export class ModuleLoader {
 			typeof source === 'string'
 				? { code: source }
 				: source != null && typeof source === 'object' && typeof source.code === 'string'
-				? source
-				: error(logBadLoader(id));
+					? source
+					: error(logBadLoader(id));
+		const code = sourceDescription.code;
+		if (code.charCodeAt(0) === 0xfe_ff) {
+			sourceDescription.code = code.slice(1);
+		}
 		const cachedModule = this.graph.cachedModules.get(id);
 		if (
 			cachedModule &&
@@ -561,9 +565,7 @@ export class ModuleLoader {
 		return module.dynamicImports.map(async dynamicImport => {
 			const resolvedId = await this.resolveDynamicImport(
 				module,
-				typeof dynamicImport.argument === 'string'
-					? dynamicImport.argument
-					: dynamicImport.argument.esTreeNode!,
+				dynamicImport.argument,
 				module.id,
 				getAttributesFromImportExpression(dynamicImport.node)
 			);
@@ -575,7 +577,6 @@ export class ModuleLoader {
 	}
 
 	private getResolveStaticDependencyPromises(module: Module): ResolveStaticDependencyPromise[] {
-		// eslint-disable-next-line unicorn/prefer-spread
 		return Array.from(
 			module.sourcesWithAttributes,
 			async ([source, attributes]) =>

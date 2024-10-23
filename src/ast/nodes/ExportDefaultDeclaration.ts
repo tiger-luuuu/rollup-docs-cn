@@ -49,6 +49,7 @@ export default class ExportDefaultDeclaration extends NodeBase {
 	}
 
 	initialise(): void {
+		super.initialise();
 		const declaration = this.declaration as FunctionDeclaration | ClassDeclaration;
 		this.declarationName =
 			(declaration.id && declaration.id.name) || (this.declaration as Identifier).name;
@@ -146,7 +147,9 @@ export default class ExportDefaultDeclaration extends NodeBase {
 			code.overwrite(
 				this.start,
 				declarationStart,
-				`${cnst} ${this.variable.getName(getPropertyAccess)} = exports('${systemExportNames[0]}', `
+				`${cnst} ${this.variable.getName(getPropertyAccess)} = exports(${JSON.stringify(
+					systemExportNames[0]
+				)}, `
 			);
 			code.appendRight(
 				hasTrailingSemicolon ? this.end - 1 : this.end,

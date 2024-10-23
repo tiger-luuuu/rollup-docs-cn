@@ -17,12 +17,12 @@ export default class SwitchStatement extends StatementBase {
 	declare discriminant: ExpressionNode;
 	declare type: NodeType.tSwitchStatement;
 
+	declare parentScope: ChildScope;
 	private declare defaultCase: number | null;
-	private declare parentScope: ChildScope;
 
 	createScope(parentScope: ChildScope): void {
 		this.parentScope = parentScope;
-		this.scope = new BlockScope(parentScope, this.scope.context);
+		this.scope = new BlockScope(parentScope);
 	}
 
 	hasEffects(context: HasEffectsContext): boolean {
@@ -34,7 +34,6 @@ export default class SwitchStatement extends StatementBase {
 		let onlyHasBrokenFlow = true;
 		for (const switchCase of this.cases) {
 			if (switchCase.hasEffects(context)) return true;
-			// eslint-disable-next-line unicorn/consistent-destructuring
 			onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
 			context.hasBreak = false;
 			context.brokenFlow = brokenFlow;
@@ -68,7 +67,6 @@ export default class SwitchStatement extends StatementBase {
 			}
 			if (isCaseIncluded) {
 				switchCase.include(context, includeChildrenRecursively);
-				// eslint-disable-next-line unicorn/consistent-destructuring
 				onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
 				context.hasBreak = false;
 				context.brokenFlow = brokenFlow;
@@ -83,6 +81,7 @@ export default class SwitchStatement extends StatementBase {
 	}
 
 	initialise(): void {
+		super.initialise();
 		for (let caseIndex = 0; caseIndex < this.cases.length; caseIndex++) {
 			if (this.cases[caseIndex].test === null) {
 				this.defaultCase = caseIndex;
@@ -92,13 +91,12 @@ export default class SwitchStatement extends StatementBase {
 		this.defaultCase = null;
 	}
 
-	parseNode(esTreeNode: GenericEsTreeNode) {
+	parseNode(esTreeNode: GenericEsTreeNode): this {
 		this.discriminant = new (this.scope.context.getNodeConstructor(esTreeNode.discriminant.type))(
-			esTreeNode.discriminant,
 			this,
 			this.parentScope
-		);
-		super.parseNode(esTreeNode);
+		).parseNode(esTreeNode.discriminant);
+		return super.parseNode(esTreeNode);
 	}
 
 	render(code: MagicString, options: RenderOptions): void {

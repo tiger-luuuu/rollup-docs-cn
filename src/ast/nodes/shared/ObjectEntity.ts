@@ -27,9 +27,7 @@ export interface ObjectProperty {
 	property: ExpressionEntity;
 }
 
-export interface PropertyMap {
-	[key: string]: ExpressionEntity[];
-}
+export type PropertyMap = Record<string, ExpressionEntity[]>;
 const INTEGER_REG_EXP = /^\d+$/;
 
 export class ObjectEntity extends ExpressionEntity {
@@ -135,10 +133,10 @@ export class ObjectEntity extends ExpressionEntity {
 						this.propertiesAndGettersByKey,
 						this.propertiesAndGettersByKey,
 						this.unmatchablePropertiesAndGetters
-				  ]
+					]
 				: type === INTERACTION_ACCESSED
-				? [this.propertiesAndGettersByKey, this.gettersByKey, this.unmatchableGetters]
-				: [this.propertiesAndSettersByKey, this.settersByKey, this.unmatchableSetters];
+					? [this.propertiesAndGettersByKey, this.gettersByKey, this.unmatchableGetters]
+					: [this.propertiesAndSettersByKey, this.settersByKey, this.unmatchableSetters];
 
 		if (typeof key === 'string') {
 			if (propertiesForExactMatchByKey[key]) {
@@ -218,10 +216,9 @@ export class ObjectEntity extends ExpressionEntity {
 		}
 		const key = path[0];
 		if (path.length === 1) {
-			if (typeof key !== 'string') {
-				if (key === UnknownInteger) {
-					return this.deoptimizeIntegerProperties();
-				}
+			if (key === UnknownInteger) {
+				return this.deoptimizeIntegerProperties();
+			} else if (typeof key !== 'string') {
 				return this.deoptimizeAllProperties(key === UnknownNonAccessorKey);
 			}
 			if (!this.deoptimizedPaths[key]) {
@@ -243,7 +240,7 @@ export class ObjectEntity extends ExpressionEntity {
 			? [
 					...(this.propertiesAndGettersByKey[key] || this.unmatchablePropertiesAndGetters),
 					...(this.settersByKey[key] || this.unmatchableSetters)
-			  ]
+				]
 			: this.allProperties) {
 			property.deoptimizePath(subPath);
 		}

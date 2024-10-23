@@ -12,7 +12,9 @@ Rollup 通常应该从命令行使用。你可以提供一个可选的 Rollup �
 
 Rollup 配置文件是可选的，但它们非常强大和方便，因此**推荐**使用。配置文件是一个 ES 模块，它导出一个默认对象，其中包含所需的选项：
 
-```javascript
+```javascript twoslash
+/** @type {import('rollup').RollupOptions} */
+// ---cut---
 export default {
 	input: 'src/main.js',
 	output: {
@@ -36,10 +38,13 @@ rollup --config rollup.config.ts --configPlugin typescript
 
 配置文件支持下面列出的选项。有关每个选项的详细信息，请参阅[选项大全](../configuration-options/index.md)：
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 
 // 可以是数组（即多个输入源）
+// ---cut-start---
+/** @type {import('rollup').RollupOptions} */
+// ---cut-end---
 export default {
 	// 核心输入选项
 	external,
@@ -90,7 +95,9 @@ export default {
 		externalImportAttributes,
 		footer,
 		generatedCode,
+		hashCharacters,
 		hoistTransitiveImports,
+		importAttributesKey,
 		inlineDynamicImports,
 		interop,
 		intro,
@@ -138,9 +145,12 @@ export default {
 
 你可以从配置文件中导出一个**数组**，以便一次从多个不相关的输入进行打包，即使在监视模式下也可以。要使用相同的输入打出不同的包，你需要为每个输入提供一个输出选项数组：
 
-```javascript
+```javascript twoslash
 // rollup.config.js (building more than one bundle)
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptions[]} */
+// ---cut-end---
 export default [
 	{
 		input: 'main-a.js',
@@ -195,11 +205,14 @@ rollup --config
 
 你还可以导出一个返回任何上述配置格式的函数。该函数将传递当前的命令行参数，以便你可以动态地调整你的配置以遵循例如 [`--silent`](#silent)。如果你使用 `config` 作为前缀定义自己的命令行选项，你甚至可以自定义它们：
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 import defaultConfig from './rollup.default.config.js';
 import debugConfig from './rollup.debug.config.js';
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptionsFunction} */
+// ---cut-end---
 export default commandLineArgs => {
 	if (commandLineArgs.configDebug === true) {
 		return debugConfig;
@@ -212,25 +225,30 @@ export default commandLineArgs => {
 
 默认情况下，命令行参数将始终覆盖从配置文件中导出的相应值。如果你想更改这种行为，可以通过从 `commandLineArgs` 对象中删除它们来让 Rollup 忽略命令行参数：
 
-```javascript
+```javascript twoslash
 // rollup.config.js
+// ---cut-start---
+/** @type {import('rollup').RollupOptionsFunction} */
+// ---cut-end---
 export default commandLineArgs => {
-  const inputBase = commandLineArgs.input || 'main.js';
+	const inputBase = commandLineArgs.input || 'main.js';
 
-  // 这会使 Rollup 忽略 CLI 参数
-  delete commandLineArgs.input;
-  return {
-    input: 'src/entries/' + inputBase,
-    output: { ... }
-  }
-}
+	// 这会使 Rollup 忽略 CLI 参数
+	delete commandLineArgs.input;
+	return {
+		input: 'src/entries/' + inputBase,
+		output: {
+			/* ... */
+		}
+	};
+};
 ```
 
 ### 填写配置时的智能提示 {#config-intellisense}
 
 由于 Rollup 随附了 TypeScript 类型定义，因此你可以使用 JSDoc 类型提示来利用你的 IDE 的智能感知功能：
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 /**
  * @type {import('rollup').RollupOptions}
@@ -243,7 +261,7 @@ export default config;
 
 或者，你可以使用 `defineConfig` 辅助函数，它应该提供无需 JSDoc 注释即可使用智能感知的功能：
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 import { defineConfig } from 'rollup';
 
@@ -260,7 +278,7 @@ export default defineConfig({
 
 你还可以通过 [`--configPlugin`](#configplugin-plugin) 选项直接使用 TypeScript 编写配置文件。使用 TypeScript，你可以直接导入 `RollupOptions` 类型：
 
-```typescript
+```typescript twoslash
 import type { RollupOptions } from 'rollup';
 
 const config: RollupOptions = {
@@ -297,14 +315,14 @@ rollup --config node:my-special-config
 
 对于 CommonJS 文件，人们经常使用 `__dirname` 访问当前目录并将相对路径解析为绝对路径。这在原生 ES 模块中不被支持。相反，我们建议使用以下方法 (例如生成外部模块的绝对 id)：
 
-```js
+```js twoslash
 // rollup.config.js
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from 'node:url';
 
 export default {
-  ...,
-  // 为 <currentdir>/src/some-file.js 生成绝对路径
-  external: [fileURLToPath(new URL('src/some-file.js', import.meta.url))]
+	/* ..., */
+	// 为 <currentdir>/src/some-file.js 生成绝对路径
+	external: [fileURLToPath(new URL('src/some-file.js', import.meta.url))]
 };
 ```
 
@@ -314,7 +332,7 @@ export default {
 
 - 对于 Node 17.5+，你可以使用导入断言
 
-  ```js
+  ```js twoslash
   import pkg from './package.json' assert { type: 'json' };
 
   export default {
@@ -326,7 +344,7 @@ export default {
 
 - 对于旧一些的 Node 版本，你可以使用 `createRequire`
 
-  ```js
+  ```js twoslash
   import { createRequire } from 'node:module';
   const require = createRequire(import.meta.url);
   const pkg = require('./package.json');
@@ -336,7 +354,7 @@ export default {
 
 - 或者直接从磁盘读取并解析其内容
 
-  ```js
+  ```js twoslash
   // rollup.config.mjs
   import { readFileSync } from 'node:fs';
 
@@ -385,11 +403,12 @@ export default {
 --no-esModule               不添加 __esModule 属性
 --exports <mode>            指定导出模式（auto、default、named、none）
 --extend                    扩展由 --name 定义的全局变量
---no-externalImportAssertions 在 "es" 输出中省略导入断言
+--no-externalImportAttributes 在 "es" 格式输出中省略导入属性
 --no-externalLiveBindings   不生成支持实时绑定的代码
 --failAfterWarnings         如果生成的构建产生警告，则退出并显示错误
 --filterLogs <filter>       过滤日志信息
 --footer <text>             在产物底部插入的代码（位于包装器之外）
+--forceExit                 当任务完成后，强制结束进程
 --no-freeze                 不冻结命名空间对象
 --generatedCode <preset>    使用哪些代码特性（es5/es2015）
 --generatedCode.arrowFunctions 在生成的代码中使用箭头函数
@@ -397,7 +416,9 @@ export default {
 --generatedCode.objectShorthand 在生成的代码中使用简写属性
 --no-generatedCode.reservedNamesAsProps 始终引用保留名称作为 props
 --generatedCode.symbols     在生成的代码中使用符号
+--hashCharacters <name>     使用指定的字符集来生成文件的哈希值
 --no-hoistTransitiveImports 不将中转导入提升到入口块中
+--importAttributesKey <name> 使用特定的关键词作为导入属性
 --no-indent                 不缩进结果
 --inlineDynamicImports      使用动态导入时创建单次打包
 --no-interop                不包括交互操作块
@@ -413,6 +434,7 @@ export default {
 --preserveModules           保留模块结构
 --preserveModulesRoot       将保留的模块放置在根路径下的此路径下
 --preserveSymlinks          解析文件时不要跟随符号链接
+--no-reexportProtoFromExternal 在使用重新导出星号（'*'）时，忽略 __proto__
 --no-sanitizeFileName       不要替换文件名中的无效字符
 --shimMissingExports        为丢失的导出创建卡扣变量
 --silent                    不打印警告
@@ -510,6 +532,7 @@ npm run build -- --environment BUILD:development
 ```shell
 rollup -c --filterLogs code:EVAL
 ```
+
 仅会展示 `log.code === 'EVAL'` 的日志消息。可以通过使用逗号分隔它们或多次使用该选项来指定多个过滤器：
 
 ```shell

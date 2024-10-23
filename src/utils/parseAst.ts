@@ -1,21 +1,14 @@
 import { parse, parseAsync } from '../../native';
 import type { ParseAst, ParseAstAsync } from '../rollup/types';
-import { convertProgram } from './convert-ast';
-import getReadStringFunction from './getReadStringFunction';
+import { convertProgram } from './bufferToAst';
+import { getAstBuffer } from './getAstBuffer';
 
-export const parseAst: ParseAst = (input, { allowReturnOutsideFunction = false } = {}) => {
-	const astBuffer = parse(input, allowReturnOutsideFunction);
-	const readString = getReadStringFunction(astBuffer);
-	const result = convertProgram(astBuffer.buffer, readString);
-	return result;
-};
+export const parseAst: ParseAst = (
+	input,
+	{ allowReturnOutsideFunction = false, jsx = false } = {}
+) => convertProgram(getAstBuffer(parse(input, allowReturnOutsideFunction, jsx)));
 
 export const parseAstAsync: ParseAstAsync = async (
 	input,
-	{ allowReturnOutsideFunction = false, signal } = {}
-) => {
-	const astBuffer = await parseAsync(input, allowReturnOutsideFunction, signal);
-	const readString = getReadStringFunction(astBuffer);
-	const result = convertProgram(astBuffer.buffer, readString);
-	return result;
-};
+	{ allowReturnOutsideFunction = false, jsx = false, signal } = {}
+) => convertProgram(getAstBuffer(await parseAsync(input, allowReturnOutsideFunction, jsx, signal)));

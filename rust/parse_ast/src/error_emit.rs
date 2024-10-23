@@ -5,7 +5,8 @@ use parking_lot::Mutex;
 use swc_common::errors::{DiagnosticBuilder, Emitter, Handler, Level, HANDLER};
 use swc_ecma_ast::Program;
 
-use crate::convert_ast::converter::{convert_string, node_types::TYPE_PARSE_ERROR};
+use crate::ast_nodes::parse_error::get_parse_error_buffer;
+use crate::convert_ast::converter::convert_string;
 
 #[derive(Clone, Default)]
 struct Writer(Arc<Mutex<Vec<u8>>>);
@@ -23,7 +24,7 @@ impl Write for Writer {
   }
 }
 
-pub struct ErrorEmitter {
+pub(crate) struct ErrorEmitter {
   wr: Box<Writer>,
 }
 
@@ -43,7 +44,7 @@ impl Emitter for ErrorEmitter {
   }
 }
 
-pub fn try_with_handler<F>(code: &str, op: F) -> Result<Program, Vec<u8>>
+pub(crate) fn try_with_handler<F>(code: &str, op: F) -> Result<Program, Vec<u8>>
 where
   F: FnOnce(&Handler) -> Result<Program, Error>,
 {
@@ -65,18 +66,16 @@ where
 }
 
 fn create_error_buffer(wr: &Writer, code: &str) -> Vec<u8> {
-  let mut buffer = TYPE_PARSE_ERROR.to_vec();
   let mut lock = wr.0.lock();
-  let mut error_buffer = take(&mut *lock);
+  let error_buffer = take(&mut *lock);
   let pos = u32::from_ne_bytes(error_buffer[0..4].try_into().unwrap());
   let mut utf_16_pos: u32 = 0;
+  // convert utf-8 to utf-16 inline
   for (utf_8_pos, char) in code.char_indices() {
     if (utf_8_pos as u32) == pos {
       break;
     }
     utf_16_pos += char.len_utf16() as u32;
   }
-  error_buffer[0..4].copy_from_slice(&utf_16_pos.to_ne_bytes());
-  buffer.extend_from_slice(&error_buffer);
-  buffer
+  get_parse_error_buffer(&error_buffer, &utf_16_pos)
 }
